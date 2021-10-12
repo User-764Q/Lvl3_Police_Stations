@@ -1,0 +1,20 @@
+<OGRVRTDataSource>
+  <OGRVRTLayer name="territorial-authority-2020-generalised">
+    <SrcDataSource relativeToVRT="1">territorial-authority-2020-generalised.csv</SrcDataSource>
+    <FeatureCount>68</FeatureCount>
+    <GeometryField field="WKT" reportSrcColumn="FALSE">
+      <GeometryType>wkbPolygon</GeometryType>
+      <SRS>EPSG:2193</SRS>
+      <ExtentXMin>1067061.1996</ExtentXMin>
+      <ExtentYMin>4701317.1813</ExtentYMin>
+      <ExtentXMax>2523319.5022</ExtentXMax>
+      <ExtentYMax>6242140.2959</ExtentYMax>
+    </GeometryField>
+    <Field name="TA2020_V1_00" src="TA2020_V1_00" type="String" width="3" />
+    <Field name="TA2020_V1_00_NAME" src="TA2020_V1_00_NAME" type="String" width="254" />
+    <Field name="TA2020_V1_00_NAME_ASCII" src="TA2020_V1_00_NAME_ASCII" type="String" width="200" />
+    <Field name="LAND_AREA_SQ_KM" src="LAND_AREA_SQ_KM" type="Real" />
+    <Field name="AREA_SQ_KM" src="AREA_SQ_KM" type="Real" />
+    <Field name="SHAPE_Length" src="SHAPE_Length" type="Real" />
+  </OGRVRTLayer>
+</OGRVRTDataSource>

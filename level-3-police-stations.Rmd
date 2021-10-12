@@ -1,0 +1,141 @@
+---
+output: 
+  html_document:
+    toc: true
+    toc_float: 
+      collapsed: false
+  number_sections: true
+ 
+title: ""
+author: "[User-764Q](https://github.com/User-764Q)"
+date: "`r paste0('Last Run: ', format(Sys.time(), '%A %d-%B-%Y'))`"
+params: 
+  param1: "Don't Forget about params"
+
+---
+
+<style>
+
+#TOC {
+ font-family: Calibri; 
+ font-size: 16px;
+ border-color: #3D68DF;
+ background: #3D68DF;
+}
+
+body {
+  font-family: Garamond;
+  font-size: 16px; 
+  border-color: #D0D0D0;
+  background-color: #D0D0D0;
+  color: #1A1A1A;
+}
+
+pre {
+  color: #1A1A1A
+  background: #D0D0D0;
+  background-color: #D0D0D0
+  font-family: Calibri; 
+  
+}
+
+</style>
+
+# Lvl 3 Police Stations NZ 
+
+#### Feb 2021
+
+This project was to practice two things, plotting some geographic data and scraping some web data. 
+
+* Data for police stations is scrapped from google, via google outscraper. 
+
+* The geographic boundary file is the TA border from [Stats NZ](https://datafinder.stats.govt.nz/layer/104267-territorial-authority-2020-generalised/)
+
+After plotting the police stations a geo-join to official border region is done to find only those stations that are in the Alert level 3 boundary. 
+
+```{r, include=FALSE}
+
+# default chunk settings for Knit. 
+
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE
+)
+```
+
+```{r, setup and load}
+
+## Loading packages
+
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+library(tmap)
+library(sf)
+
+#Loading Police station locations these are from 'Auckland' according to google. 
+#But some likely fall outside the area
+
+police_data <- read_delim('Auckland_police_station.csv', delim = ',', skip = 1) %>%
+  st_as_sf(coords = c('longitude', 'latitude'), crs = 4326)
+
+# Creating the path for the stats NZ territory data
+path_to_ta_shapefile <- file.path('statsnzterritorial-authority-2020-generalised-CSV' , 
+                                  'territorial-authority-2020-generalised.csv') 
+
+# Loading the lockdown area data
+Lock_down_area <- read_delim(path_to_ta_shapefile, delim = ',') %>%
+    st_as_sf(wkt = 'WKT', crs = 2193) %>%
+    # filtering just Auckland 
+    filter(TA2020_V1_00_NAME == 'Auckland') 
+
+```
+
+### Initial plot
+
+The web scraping just looked at stations that mentioned 'Auckland' so it's expected that some of them are not in the official boundary. Less likely is missing some stations because they are in the boundary but don't mention Auckland. 4 Stations are not in the area and will be removed. 
+
+```{r}
+
+# Initial plot
+
+  ggplot() + 
+    geom_sf(data = Lock_down_area) +
+    geom_sf(data = police_data)
+
+```
+
+### In the area only
+
+This code removes the stations that are not in the boundary. 
+
+```{r}
+
+# 
+
+# need to reprgramme crs to match. 
+
+police_data_2193 <- police_data %>% st_transform(crs = 2193)
+
+joined_data <- st_join(Lock_down_area, police_data_2193)
+in_area_police <- joined_data %>% pull(full_address)
+
+in_area_police_2193 <- police_data_2193 %>%
+  filter(full_address %in% in_area_police) 
+
+
+```
+
+### Plotting by 'City'
+
+Re plotting with only those stations in the official boundary, colouring by 'City'.
+
+```{r, replot}
+
+tmap_mode('plot')
+
+tm_shape(Lock_down_area) + tm_polygons(col = 'cornflowerblue', alpha = .5) + 
+  tm_shape(in_area_police_2193) + tm_dots(col = 'query_p2', size = .2) +
+  ggsave('lock_down_stations.png', device = jpeg)
+
+```
+
