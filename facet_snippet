@@ -1,0 +1,7 @@
+ggplot() +
+  #--- KS county boundary ---#
+  geom_sf(data = st_transform(KS_county, 32614)) +
+  #--- wells ---#
+  geom_sf(data = gw_KS_sf, aes(color = af_used)) +
+  #--- facet by year (side by side) ---#
+  facet_wrap(. ~ year)
